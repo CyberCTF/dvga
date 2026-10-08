@@ -14,7 +14,7 @@ practising GraphQL security. This repository runs it with [Isoloom](https://www.
 
 ```bash
 isoloom generate
-isoloom up docker
+isoloom run docker
 ```
 
 Then open http://localhost:5013/. The GraphQL endpoint is `/graphql` and GraphiQL is at
