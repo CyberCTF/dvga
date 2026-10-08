@@ -1,0 +1,152 @@
+{
+  "generated_by_isoloom": "from isoloom.yml; don't edit: change the spec and run `isoloom generate` (`isoloom check` fails when this file is out of date)",
+  "resolved_version": 1,
+  "name": "dvga",
+  "instance": null,
+  "inputs": [],
+  "networks": {
+    "lab": {
+      "cidr": "10.60.8.0/24",
+      "docker_cidr": "10.60.8.0/24",
+      "internet": false,
+      "gateway": null,
+      "gateway_address": "10.60.8.1",
+      "router": null,
+      "controller": "10.60.8.253"
+    }
+  },
+  "reach": [],
+  "machines": {
+    "dvga": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "docker"
+      ],
+      "arch": "amd64",
+      "os": null,
+      "windows": false,
+      "addresses": {
+        "lab": "10.60.8.10"
+      },
+      "docker_addresses": {
+        "lab": "10.60.8.10"
+      },
+      "services": [
+        {
+          "port": 5013,
+          "name": "web",
+          "http": true,
+          "publish": 5013
+        }
+      ],
+      "depends_on": [],
+      "inputs": [],
+      "volumes": {},
+      "resources": {
+        "cpus": 1,
+        "memory_mb": 512,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": true
+    }
+  },
+  "start_order": [
+    "dvga"
+  ],
+  "clones": {},
+  "tools": {},
+  "groups": {},
+  "router": null,
+  "controller": {
+    "addresses": {
+      "lab": "10.60.8.253"
+    }
+  },
+  "published": [
+    {
+      "machine": "dvga",
+      "port": 5013,
+      "host_port": 5013
+    }
+  ],
+  "targets": {
+    "possible": [
+      "docker",
+      "hosted",
+      "docker-vm",
+      "cloud-docker",
+      "kubernetes"
+    ],
+    "generated": [
+      "docker",
+      "hosted",
+      "docker-vm",
+      "cloud-docker",
+      "kubernetes"
+    ],
+    "refused": {},
+    "not_possible": {
+      "hybrid": "only when some machines are containers and others are VMs",
+      "vagrant": "needs `vm:` on dvga",
+      "proxmox": "needs `vm:` on dvga",
+      "cloud-vm": "needs `vm:` on dvga",
+      "external": "needs `external:` on dvga"
+    }
+  },
+  "checks": {
+    "default_position": "networks",
+    "positions": [
+      {
+        "position": "networks",
+        "machine": null,
+        "runner": "isoloom-check",
+        "checks": [
+          {
+            "name": "DVGA answers",
+            "derived": false,
+            "kind": "http",
+            "target": "http://dvga:5013/",
+            "expect": "200",
+            "wait": 120
+          },
+          {
+            "name": "GraphiQL is served",
+            "derived": false,
+            "kind": "http",
+            "target": "http://dvga:5013/graphiql",
+            "expect": "any",
+            "wait": 30
+          },
+          {
+            "name": "the GraphQL API returns the seeded pastes",
+            "derived": false,
+            "kind": "script",
+            "target": "checks/graphql.sh",
+            "expect": "",
+            "wait": 30
+          }
+        ]
+      },
+      {
+        "position": "dvga",
+        "machine": "dvga",
+        "runner": "isoloom-check-dvga",
+        "checks": [
+          {
+            "name": "no internet from dvga",
+            "derived": true,
+            "kind": "http",
+            "target": "http://1.1.1.1/",
+            "expect": "blocked",
+            "wait": 0
+          }
+        ]
+      }
+    ]
+  },
+  "message": "DVGA answers at http://localhost:5013/; the GraphQL endpoint is\n/graphql and GraphiQL is at /graphiql. Pick the Beginner or Expert mode from the menu; the\nsolutions page lists the challenges.\n"
+}

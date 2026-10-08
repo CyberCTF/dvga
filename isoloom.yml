@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://www.isoloom.com/schema/v1.json
+# DVGA, Damn Vulnerable GraphQL Application (by Dolev Farhi and Nick Aleks) as an Isoloom spec: the
+# upstream source, vendored unchanged in build/dvga/app/, built by its Dockerfile with the listen
+# address baked in.
+# `isoloom generate`, then `isoloom up docker`.
+version: 1
+name: dvga
+
+networks:
+  lab: { cidr: 10.60.8.0/24, internet: false }
+
+machines:
+  dvga:
+    networks: { lab: 10 }
+    services: [{ port: 5013, name: web, http: true, publish: 5013 }]
+    resources: { cpus: 1, memory_mb: 512 }
+    docker:
+      build: build/dvga
+
+checks:
+  - name: DVGA answers
+    http: http://dvga:5013/
+    wait: 120
+  - name: GraphiQL is served
+    http: http://dvga:5013/graphiql
+    expect: any
+  - name: the GraphQL API returns the seeded pastes
+    script: checks/graphql.sh
+    wait: 30
+
+message: |
+  DVGA answers at http://localhost:{{ machines.dvga.services.0.publish }}/; the GraphQL endpoint is
+  /graphql and GraphiQL is at /graphiql. Pick the Beginner or Expert mode from the menu; the
+  solutions page lists the challenges.
