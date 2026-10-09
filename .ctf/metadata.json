@@ -4,6 +4,5 @@
   "question": "Solve the DVGA challenges listed on its solutions page.",
   "category": "WEB",
   "difficulty": 3,
-  "evidence_kind": "SECRET",
-  "capabilities": ["graphql", "denial-of-service", "os-command-injection", "ssrf", "sql-injection", "authorization-bypass"]
+  "evidence_kind": "SECRET"
 }
