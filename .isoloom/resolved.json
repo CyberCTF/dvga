@@ -94,7 +94,8 @@
       "vagrant": "needs `vm:` on dvga",
       "proxmox": "needs `vm:` on dvga",
       "cloud-vm": "needs `vm:` on dvga",
-      "external": "needs `external:` on dvga"
+      "external": "needs `external:` on dvga",
+      "cloud-services": "left out by `targets:`"
     }
   },
   "checks": {
