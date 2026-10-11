@@ -1,10 +1,13 @@
 # yaml-language-server: $schema=https://www.isoloom.com/schema/v1.json
 # DVGA, Damn Vulnerable GraphQL Application (by Dolev Farhi and Nick Aleks) as an Isoloom spec: the
 # upstream source, vendored unchanged in build/dvga/app/, built by its Dockerfile with the listen
-# address baked in.
+# address baked in, and a per-player flag wrapper (ctf-entrypoint.sh, ctf_flags.py).
 # `isoloom generate`, then `isoloom up docker`.
 version: 1
 name: dvga
+
+# Given by the CyberCTF launcher: this player's flags. Without them the development flags.
+inputs: [CTF_FLAG_MAIN, CTF_FLAG_SQL_INJECTION]
 
 networks:
   lab: { cidr: 10.60.8.0/24, internet: false }
@@ -14,8 +17,11 @@ machines:
     networks: { lab: 10 }
     services: [{ port: 5013, name: web, http: true, publish: 5013 }]
     resources: { cpus: 1, memory_mb: 512 }
+    inputs: [CTF_FLAG_MAIN, CTF_FLAG_SQL_INJECTION]
+    volumes: { ctf: /ctf }   # the flags, written by ctf-entrypoint.sh and ctf/flag.sh at every start
     docker:
       build: build/dvga
+      init: [ctf/flag.sh]
 
 checks:
   - name: DVGA answers

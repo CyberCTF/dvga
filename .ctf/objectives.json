@@ -1,0 +1,344 @@
+{
+  "objectives": [
+    {
+      "key": "main",
+      "title": "OS command injection",
+      "prompt": "The importPaste mutation hands its arguments to a system command. Use OS command injection to run a command on the server and read /ctf/flag.",
+      "check": {
+        "evidence": "SECRET",
+        "format": "FLAG{%s}"
+      },
+      "dev": "FLAG{dev-dvga}",
+      "hints": [
+        "importPaste builds a command line from the host, port, path and scheme you give it.",
+        "Look up OS command injection through command chaining."
+      ],
+      "steps": [
+        {
+          "key": "mutation",
+          "title": "Find the mutation",
+          "prompt": "Which GraphQL mutation fetches a paste from a remote server? (name only)",
+          "check": {
+            "answer": [
+              "importpaste"
+            ]
+          }
+        },
+        {
+          "key": "tool",
+          "title": "Name the tool",
+          "prompt": "Which command-line HTTP client does the resolver run to fetch it?",
+          "check": {
+            "answer": [
+              "curl"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "sql-injection",
+      "title": "SQL injection",
+      "prompt": "The pastes query accepts a raw filter string. Use SQL injection through it to read the table flags of the application's database.",
+      "check": {
+        "evidence": "SECRET",
+        "format": "FLAG{%s}"
+      },
+      "dev": "FLAG{dev-dvga-sql-injection}",
+      "hints": [
+        "Which argument of the pastes query ends up inside the SQL statement?",
+        "The database is SQLite: its catalogue lists the tables."
+      ]
+    },
+    {
+      "key": "introspection",
+      "title": "Introspection",
+      "prompt": "Use introspection to read the API's schema. Which top-level meta field does an introspection query ask for?",
+      "check": {
+        "answer": [
+          "__schema",
+          "schema"
+        ]
+      },
+      "hints": [
+        "Introspection is a feature of GraphQL itself, not of this app."
+      ]
+    },
+    {
+      "key": "graphiql",
+      "title": "GraphiQL interface",
+      "prompt": "Find the GraphQL IDE the server exposes. At which path is it served?",
+      "check": {
+        "answer": [
+          "/graphiql",
+          "graphiql"
+        ]
+      },
+      "hints": [
+        "The IDE's name is GraphQL with an i in the middle."
+      ]
+    },
+    {
+      "key": "graphiql-authz-bypass",
+      "title": "GraphiQL authorization bypass",
+      "prompt": "GraphiQL refuses to run queries until you bypass its authorization check. Which cookie does that check trust?",
+      "check": {
+        "answer": [
+          "env"
+        ]
+      },
+      "hints": [
+        "Read the cookies the server sets and what their values say about GraphiQL."
+      ]
+    },
+    {
+      "key": "ssrf",
+      "title": "Server-side request forgery",
+      "prompt": "Make the server send a request to a host of your choice, including internal ones. Which argument of importPaste names the host?",
+      "check": {
+        "answer": [
+          "host"
+        ]
+      },
+      "hints": [
+        "importPaste does not restrict where it fetches from."
+      ]
+    },
+    {
+      "key": "diagnostics-injection",
+      "title": "OS command injection 2",
+      "prompt": "systemDiagnostics is a restricted shell behind a username and password. Which username does it accept?",
+      "check": {
+        "answer": [
+          "admin"
+        ]
+      },
+      "hints": [
+        "Look at the users the API knows about.",
+        "The restriction on commands can be bypassed by chaining."
+      ]
+    },
+    {
+      "key": "brute-force",
+      "title": "Brute force the diagnostics password",
+      "prompt": "systemDiagnostics has no rate limiting and a weak password. Brute force it: what is the password?",
+      "check": {
+        "answer": [
+          "changeme"
+        ]
+      },
+      "hints": [
+        "Batching or aliases let one HTTP request try many passwords."
+      ]
+    },
+    {
+      "key": "path-traversal",
+      "title": "Arbitrary file write",
+      "prompt": "uploadPaste stores pastes under a dedicated folder. Which of its arguments lets you write outside that folder?",
+      "check": {
+        "answer": [
+          "filename",
+          "file name"
+        ]
+      },
+      "hints": [
+        "Look up path traversal: what happens to a name containing parent-directory segments?"
+      ]
+    },
+    {
+      "key": "jwt-forgery",
+      "title": "JWT token forgery",
+      "prompt": "The me query trusts its token without verifying it. Which claim of the token names the user it returns?",
+      "check": {
+        "answer": [
+          "identity"
+        ]
+      },
+      "hints": [
+        "Decode a token from the login mutation and read its payload.",
+        "The server decodes the token but skips the signature check."
+      ]
+    },
+    {
+      "key": "resource-intensive-query",
+      "title": "Resource-intensive query",
+      "prompt": "One query runs much heavier backend logic than the others. Which query is it?",
+      "check": {
+        "answer": [
+          "systemupdate",
+          "system update"
+        ]
+      },
+      "hints": [
+        "Compare how long the system* queries take to answer."
+      ]
+    },
+    {
+      "key": "batch-dos",
+      "title": "Batch query attack",
+      "optional": true,
+      "prompt": "The server processes batched requests one after another. In which JSON structure do you send several queries in one request?",
+      "check": {
+        "answer": [
+          "array",
+          "list",
+          "json array"
+        ]
+      },
+      "hints": [
+        "A batch is several operations in one HTTP body."
+      ]
+    },
+    {
+      "key": "deep-recursion",
+      "title": "Deep recursion query attack",
+      "optional": true,
+      "prompt": "Two object types reference each other, so a query can nest without limit. Which field of a paste leads back to an object that lists pastes again?",
+      "check": {
+        "answer": [
+          "owner"
+        ]
+      },
+      "hints": [
+        "Read the Paste and Owner types in the schema."
+      ]
+    },
+    {
+      "key": "field-duplication",
+      "title": "Resource exhaustion by field duplication",
+      "optional": true,
+      "prompt": "The server does not de-duplicate repeated fields. Which word describes what you repeat in the query to multiply the work? (one word)",
+      "check": {
+        "answer": [
+          "field",
+          "fields"
+        ]
+      },
+      "hints": [
+        "The same selection can appear many times in one query."
+      ]
+    },
+    {
+      "key": "aliases-overloading",
+      "title": "Aliases-based attack",
+      "optional": true,
+      "prompt": "Without batching, one query can still call the same operation many times. Which GraphQL feature makes that possible?",
+      "check": {
+        "answer": [
+          "alias",
+          "aliases"
+        ]
+      },
+      "hints": [
+        "Each repeated call needs a different result key."
+      ]
+    },
+    {
+      "key": "field-suggestions",
+      "title": "Field suggestions",
+      "optional": true,
+      "prompt": "Mistype the field title of a paste (as titl). Which field does the error message suggest?",
+      "check": {
+        "answer": [
+          "title"
+        ]
+      },
+      "hints": [
+        "GraphQL suggests nearby field names when one does not exist."
+      ]
+    },
+    {
+      "key": "circular-fragment",
+      "title": "Circular fragment",
+      "optional": true,
+      "prompt": "Two fragments that reference each other send the server into a loop. Which GraphQL operator pulls a fragment into another?",
+      "check": {
+        "answer": [
+          "spread",
+          "spread operator",
+          "...",
+          "fragment spread"
+        ]
+      },
+      "hints": [
+        "It is written as three dots."
+      ]
+    },
+    {
+      "key": "stored-xss",
+      "title": "Stored cross-site scripting",
+      "optional": true,
+      "prompt": "Pastes render in the browser without sanitising. Which mutation, other than importPaste and uploadPaste, stores a paste directly?",
+      "check": {
+        "answer": [
+          "createpaste"
+        ]
+      },
+      "hints": [
+        "Look at the mutations in the schema."
+      ]
+    },
+    {
+      "key": "html-injection",
+      "title": "HTML injection",
+      "optional": true,
+      "prompt": "A paste can carry HTML that renders in the application. Which page lists everyone's pastes and renders it? (path)",
+      "check": {
+        "answer": [
+          "/public_pastes",
+          "public_pastes",
+          "public pastes"
+        ]
+      },
+      "hints": [
+        "Browse the menu: one page shows other users' pastes."
+      ]
+    },
+    {
+      "key": "log-spoofing",
+      "title": "Log spoofing",
+      "optional": true,
+      "prompt": "The audit log records each request by a name the client chooses. Which part of a GraphQL request is it?",
+      "check": {
+        "answer": [
+          "operation name",
+          "operationname",
+          "operation"
+        ]
+      },
+      "hints": [
+        "Every query or mutation can be given a name of your choosing."
+      ]
+    },
+    {
+      "key": "denylist-bypass",
+      "title": "Deny-list bypass",
+      "optional": true,
+      "prompt": "A deny-list rejects one query by name. Which query does it try to block?",
+      "check": {
+        "answer": [
+          "systemhealth"
+        ]
+      },
+      "hints": [
+        "Try the system* queries and see which one is rejected."
+      ]
+    },
+    {
+      "key": "stack-trace",
+      "title": "Stack trace errors",
+      "optional": true,
+      "prompt": "GraphiQL returns stack traces on bad queries. In which programming language is the backend written, as the traces show?",
+      "check": {
+        "answer": [
+          "python",
+          "python 3",
+          "python3"
+        ]
+      },
+      "hints": [
+        "Send a query with a syntax error to /graphiql."
+      ]
+    }
+  ]
+}

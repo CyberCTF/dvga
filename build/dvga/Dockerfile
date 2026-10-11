@@ -38,3 +38,17 @@ ENV WEB_HOST=0.0.0.0
 
 EXPOSE 5013/tcp
 CMD ["python", "app.py"]
+
+# CyberCTF per-player flags (the vendored source is unchanged). ctf-entrypoint.sh writes the
+# player's flags (CTF_FLAG_MAIN, CTF_FLAG_SQL_INJECTION) into /ctf at every start, then runs the
+# original command. setup.py, which the app runs at every start and on every reset, rebuilds the
+# database; ctf_flags.py, called at its end, adds the table flags back from /ctf.
+USER root
+COPY ctf-entrypoint.sh /usr/local/bin/ctf-entrypoint.sh
+COPY --chown=dvga:dvga ctf_flags.py /opt/dvga/ctf_flags.py
+RUN sed -i 's/^  pump_db()$/  pump_db()\n  import ctf_flags; ctf_flags.place()/' /opt/dvga/setup.py \
+ && grep -q 'ctf_flags.place()' /opt/dvga/setup.py \
+ && mkdir -p /ctf && chown dvga:dvga /ctf
+USER dvga
+ENTRYPOINT ["/usr/local/bin/ctf-entrypoint.sh"]
+CMD ["python", "app.py"]

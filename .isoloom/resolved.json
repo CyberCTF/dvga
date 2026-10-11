@@ -3,7 +3,10 @@
   "resolved_version": 1,
   "name": "dvga",
   "instance": null,
-  "inputs": [],
+  "inputs": [
+    "CTF_FLAG_MAIN",
+    "CTF_FLAG_SQL_INJECTION"
+  ],
   "networks": {
     "lab": {
       "cidr": "10.60.8.0/24",
@@ -41,8 +44,13 @@
         }
       ],
       "depends_on": [],
-      "inputs": [],
-      "volumes": {},
+      "inputs": [
+        "CTF_FLAG_MAIN",
+        "CTF_FLAG_SQL_INJECTION"
+      ],
+      "volumes": {
+        "ctf": "/ctf"
+      },
       "resources": {
         "cpus": 1,
         "memory_mb": 512,

@@ -18,8 +18,14 @@ services:
     networks:
       lab:
         ipv4_address: 10.60.8.10
+    environment:
+      CTF_FLAG_MAIN: ${CTF_FLAG_MAIN:-}
+      CTF_FLAG_SQL_INJECTION: ${CTF_FLAG_SQL_INJECTION:-}
     ports:
     - ${ISOLOOM_PUBLISH_ADDRESS:-127.0.0.1}:${ISOLOOM_PUBLISH_FIXED:+5013}:5013
+    volumes:
+    - dvga-ctf:/ctf
+    - isoloom-probe-amd64:/.isoloom-probe:ro
     healthcheck:
       test:
       - CMD
@@ -31,8 +37,6 @@ services:
       timeout: 3s
       retries: 60
       start_period: 10s
-    volumes:
-    - isoloom-probe-amd64:/.isoloom-probe:ro
     depends_on:
       isoloom-probe-amd64:
         condition: service_completed_successfully
@@ -69,6 +73,27 @@ services:
     labels:
       isoloom.managed: 'true'
       isoloom.environment: dvga
+  dvga-init-1:
+    image: isoloom/dvga-dvga
+    entrypoint:
+    - /bin/sh
+    - /isoloom/init/flag.sh
+    volumes:
+    - ../../ctf/flag.sh:/isoloom/init/flag.sh:ro
+    - dvga-ctf:/ctf
+    network_mode: service:dvga
+    environment:
+      CTF_FLAG_MAIN: ${CTF_FLAG_MAIN:-}
+      CTF_FLAG_SQL_INJECTION: ${CTF_FLAG_SQL_INJECTION:-}
+    depends_on:
+      dvga:
+        condition: service_healthy
+      dvga-routes:
+        condition: service_healthy
+    restart: no
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: dvga
   isoloom-check:
     image: curlimages/curl:8.11.1
     profiles:
@@ -88,6 +113,8 @@ services:
     depends_on:
       dvga:
         condition: service_healthy
+      dvga-init-1:
+        condition: service_completed_successfully
       dvga-routes:
         condition: service_healthy
     labels:
@@ -106,6 +133,8 @@ services:
     depends_on:
       dvga:
         condition: service_healthy
+      dvga-init-1:
+        condition: service_completed_successfully
       dvga-routes:
         condition: service_healthy
     labels:
@@ -135,6 +164,10 @@ networks:
       isoloom.managed: 'true'
       isoloom.environment: dvga
 volumes:
+  dvga-ctf:
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: dvga
   isoloom-probe-amd64:
     labels:
       isoloom.managed: 'true'
