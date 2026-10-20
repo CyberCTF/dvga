@@ -1,8 +1,11 @@
 {
+  "project_name": "cyberlabs-dvga",
+  "slug": "dvga",
   "title": "DVGA",
   "description": "Damn Vulnerable GraphQL Application: a deliberately weak Flask and Graphene GraphQL API (a paste service) for learning GraphQL attacks, from introspection and batching denial of service to injection, SSRF and authorization bypass, in a beginner and an expert mode.",
-  "question": "Solve the DVGA challenges listed for this lab: from introspection and denial of service to injection, authorization bypass and token forgery, ending with OS command injection to read /ctf/flag.",
-  "category": "WEB",
+  "category": "web",
   "difficulty": 3,
-  "evidence_kind": "SECRET"
+  "evidence_kind": "SECRET",
+  "capabilities": [],
+  "question": "Solve the DVGA challenges listed for this lab: from introspection and denial of service to injection, authorization bypass and token forgery, ending with OS command injection to read /ctf/flag."
 }

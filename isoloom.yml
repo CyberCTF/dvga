@@ -7,21 +7,32 @@ version: 1
 name: dvga
 
 # Given by the CyberCTF launcher: this player's flags. Without them the development flags.
-inputs: [CTF_FLAG_MAIN, CTF_FLAG_SQL_INJECTION]
+inputs:
+  CTF_FLAG_MAIN: {}
+  CTF_FLAG_SQL_INJECTION: {}
 
 networks:
-  lab: { cidr: 10.60.8.0/24, internet: false }
+  lab: {cidr: 10.60.8.0/24, internet: false}
 
 machines:
   dvga:
-    networks: { lab: 10 }
-    services: [{ port: 5013, name: web, http: true, publish: 5013 }]
-    resources: { cpus: 1, memory_mb: 512 }
-    inputs: [CTF_FLAG_MAIN, CTF_FLAG_SQL_INJECTION]
-    volumes: { ctf: /ctf }   # the flags, written by ctf-entrypoint.sh and ctf/flag.sh at every start
-    docker:
+    networks: {lab: 10}
+    resources: {cpus: 1, memory_mb: 512}
+    volumes: {ctf: /ctf}     # the flags, written by ctf-entrypoint.sh and ctf/flag.sh at every start
+    ports:
+      web:
+        port: 5013
+        protocol: http
+        publish: true
+    files:
+      - path: /run/lab/ctf_flag_main
+        input: CTF_FLAG_MAIN
+      - path: /run/lab/ctf_flag_sql_injection
+        input: CTF_FLAG_SQL_INJECTION
+    setup:
+      - ctf/flag.sh
+    app:
       build: build/dvga
-      init: [ctf/flag.sh]
 
 checks:
   - name: DVGA answers
@@ -35,6 +46,6 @@ checks:
     wait: 30
 
 message: |
-  DVGA answers at http://localhost:{{ machines.dvga.services.0.publish }}/; the GraphQL endpoint is
+  DVGA answers at {{ machines.dvga.ports.web.url }}; the GraphQL endpoint is
   /graphql and GraphiQL is at /graphiql. Pick the Beginner or Expert mode from the menu; the
   solutions page lists the challenges.
